@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Chain View</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='chain_style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Blockchain Chain View</h1>
+        <ul id="blockchainList"></ul>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.get('/get_chain', function(data) {
+                data.forEach(function(block) {
+                    var blockItem = '<li>';
+                    blockItem += '<div><strong>Index:</strong> ' + block.index + '</div>';
+                    blockItem += '<div><strong>Timestamp:</strong> ' + new Date(block.timestamp * 1000).toLocaleString() + '</div>';
+                    blockItem += '<div><strong>Task:</strong> ' + block.task + '</div>';
+                    blockItem += '<div><strong>Hash:</strong> ' + block.hash + '</div>';
+                    blockItem += '<div><strong>Previous Hash:</strong> ' + block.previous_hash + '</div>';
+                    blockItem += '<div><strong>Completed:</strong> ' + (block.completed ? 'Yes' : 'No') + '</div>';
+                    blockItem += '</li>';
+                    $('#blockchainList').append(blockItem);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

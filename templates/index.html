@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Blockchain To-Do List</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/view_chain">View Chain</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <form id="taskForm">
+            <input type="text" id="task" name="task" placeholder="Enter a task">
+            <button type="submit">Add Task</button>
+        </form>
+        <h2>To-Do List</h2>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#taskForm').on('submit', function(e) {
+                e.preventDefault();
+                var task = $('#task').val();
+                $.ajax({
+                    url: '/add_task',
+                    method: 'POST',
+                    data: { task: task },
+                    success: function(data) {
+                        $('#task').val('');
+                        updateTaskList(data);
+                    }
+                });
+            });
+
+            function updateTaskList(data) {
+                $('#taskList').empty();
+                data.forEach(function(block) {
+                    if (block.index !== 0) { // Skip Genesis Block
+                        var taskItem = '<li class="' + (block.completed ? 'completed' : '') + '">' + block.task;
+                        taskItem += '<div class="task-buttons">';
+                        if (!block.completed) {
+                            taskItem += '<button class="complete-btn" data-index="' + block.index + '">Complete</button>';
+                        }
+                        taskItem += '<button class="remove-btn" data-index="' + block.index + '">Remove</button></div></li>';
+                        $('#taskList').append(taskItem);
+                    }
+                });
+
+                $('.complete-btn').on('click', function() {
+                    var index = $(this).data('index');
+                    $.ajax({
+                        url: '/complete_task',
+                        method: 'POST',
+                        data: { index: index },
+                        success: function(data) {
+                            updateTaskList(data);
+                        }
+                    });
+                });
+
+                $('.remove-btn').on('click', function() {
+                    var index = $(this).data('index');
+                    $.ajax({
+                        url: '/remove_task',
+                        method: 'POST',
+                        data: { index: index },
+                        success: function(data) {
+                            updateTaskList(data);
+                        }
+                    });
+                });
+            }
+
+            $.get('/get_chain', function(data) {
+                updateTaskList(data);
+            });
+        });
+    </script>
+</body>
+</html>
